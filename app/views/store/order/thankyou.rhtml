@@ -32,8 +32,13 @@
 <h3>HOW TO ACTIVATE</h3>
 <div class="box">
 <p>
-    If you have the <%= application %> installed, you can activate by clicking on the "Activate Now" button.
-    Otherwise, you can copy and paste the license key into the application's registration window.
+    <% if !@order.line_items[0].product.license_url_scheme.blank? %>
+      If you have the <%= application %> installed, you can activate by clicking on the "Activate Now" button.
+      
+      Otherwise, you can copy and paste the license key into the application's registration window.
+    <% else %>
+      To activate, copy and paste the license key into the application's registration window.
+    <% end %>
 </p>
 
 <table id="license_keys">
@@ -41,7 +46,11 @@
 	<tr>
 		<td class="first"><b><%=item.product.name%>:</b></td>
 		<td><input type='textfield' size="40" value="<%= item.license_key %>" onClick="$(this).select()"></td>
-		<td><a class="button" href="<%= item.license_url %>">ACTIVATE NOW</a></td>
+    <td>
+      <% if !item.product.license_url_scheme.blank? %>
+        <a class="button" href="<%= item.license_url %>">ACTIVATE NOW</a>
+      <% end %>
+    </td>
 	</tr>
 <% end -%>
 </table>
