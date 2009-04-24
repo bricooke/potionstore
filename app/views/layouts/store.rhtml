@@ -19,8 +19,9 @@
 <div id="page" class="narrow">
 	<div id="page_top">
 		<% if not $STORE_PREFS['company_logo_path'].blank? -%>
-		<div id="logo"><a href="<%=$STORE_PREFS['company_url']%>"><img src="<%=$STORE_PREFS['company_logo_path']%>" alt="<%=$STORE_PREFS['company_name']%>"/></a>
-		</div>
+      <div id="logo">
+        <a href="<%=$STORE_PREFS['company_url']%>" <%- if $STORE_PREFS['company_logo_rollover_path'] %> onMouseOver="document.logo.src='<%= $STORE_PREFS['company_logo_rollover_path'] %>'" onMouseOut="document.logo.src='<%=$STORE_PREFS['company_logo_path']%>'" <%- end %>><img name='logo' src="<%=$STORE_PREFS['company_logo_path']%>" alt="<%=$STORE_PREFS['company_name']%>"/></a>
+      </div>
 		<% end -%>
 		<h1><%=$STORE_PREFS['store_name']%></h1>
 		<div class="tm"></div><img class="tr" src="/images/store/rounded_tr.png" alt="rounded border"/>
