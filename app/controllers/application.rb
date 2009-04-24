@@ -2,6 +2,7 @@
 # Likewise, all the methods added will be available for all controllers.
 
 class ApplicationController < ActionController::Base
+  include ExceptionNotifiable
 
   # Don't log any credit card data
   filter_parameter_logging :password, :cc_number, :cc_code, :cc_month, :cc_year
