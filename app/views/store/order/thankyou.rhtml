@@ -40,7 +40,7 @@
 	<% for item in @order.line_items -%>
 	<tr>
 		<td class="first"><b><%=item.product.name%>:</b></td>
-		<td><code style="font-size:13px"><%= item.license_key %></code></td>
+		<td><input type='textfield' size="40" value="<%= item.license_key %>" onClick="$(this).select()"></td>
 		<td><a class="button" href="<%= item.license_url %>">ACTIVATE NOW</a></td>
 	</tr>
 <% end -%>
