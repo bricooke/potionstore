@@ -1,5 +1,6 @@
 class Order < ActiveRecord::Base
   has_many :line_items
+  has_one :tax
   belongs_to :coupon
 
   attr_accessor :cc_code, :cc_month, :cc_year
@@ -55,24 +56,39 @@ class Order < ActiveRecord::Base
       elsif (self.licensee_name =~ /^[\w ]*$/) != nil && self.licensee_name.length < 8
         errors.add('licensee_name', msg= 'must be at least 8 characters long')
       end
+      
+      # make sure they supplied an email address
+      if (self.email =~ /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i) == nil
+        errors.add('email', msg='must be a valid email address')
+      end
     end
   end
 
+  def state=(value)
+    self[:state] = value
+
+    self.tax = Tax.tax_for_state(value)
+  end
+
   def total
-    return round_money(total_before_applying_coupons() - coupon_amount())
+    return round_money(total_before_applying_coupons() - coupon_amount() + tax_total())
   end
 
   def total_before_applying_coupons
     total = 0
     for item in self.line_items
-        total = total + item.total
+      total = total + item.total
     end
     return round_money(total)
   end
 
-  ## tax and shipping are hard-wired to 0 for now
+  def total_without_taxes
+    return round_money(total_before_applying_coupons() - coupon_amount())
+  end
+
   def tax_total
-    return 0
+    return 0 if self.tax.nil?
+    return self.tax.total
   end
 
   def shipping_total
@@ -111,13 +127,10 @@ class Order < ActiveRecord::Base
   end
 
   def licensee_name=(new_name)
-    regenerate_keys = (self.licensee_name != new_name) && (self.submitting? or self.complete?)
     write_attribute(:licensee_name, new_name.strip())
-    if regenerate_keys
-      for item in self.line_items
-        item.license_key = item.generate_license_key
-      end
-    end
+    # we used to regenerate the license keys here, but that wasn't doing anything good
+    # since when line_item refers to its .order it will fetch it from the db
+    # which will get the previous value
   end
 
   def first_name=(value)
@@ -171,6 +184,10 @@ class Order < ActiveRecord::Base
 
   def gcheckout?
     return self.payment_type != nil && self.payment_type.downcase == 'google checkout'
+  end
+  
+  def freebie?
+    return self.payment_type != nil && self.payment_type.downcase == 'freebie'
   end
 
   def pending?
@@ -307,18 +324,18 @@ class Order < ActiveRecord::Base
   def add_promo_coupons
     self.promo_coupons = []
     # if the order contains Voice Candy, create 3 coupons
-#     if self.has_item_with_code('vc')
-#       1.upto(3) { |i|
-#         coupon = Coupon.new
-#         coupon.code = 'vc'
-#         coupon.product_code = 'vc'
-#         coupon.description = 'Cool friend discount'
-#         coupon.amount = 3.00
-#         coupon.numdays = 16
-#         coupon.save()
-#         coupons << coupon
-#       }
-#     end
+    #     if self.has_item_with_code('vc')
+    #       1.upto(3) { |i|
+    #         coupon = Coupon.new
+    #         coupon.code = 'vc'
+    #         coupon.product_code = 'vc'
+    #         coupon.description = 'Cool friend discount'
+    #         coupon.amount = 3.00
+    #         coupon.numdays = 16
+    #         coupon.save()
+    #         coupons << coupon
+    #       }
+    #     end
     return promo_coupons
   end
 
@@ -393,6 +410,8 @@ class Order < ActiveRecord::Base
                               :lastName => self.last_name,
                               :ip => ip_address,
                               :amount => self.total,
+                              :pretax_amount => self.total_without_taxes,
+                              :tax_amount => self.tax_total,
                               :itemName => $STORE_PREFS['company_name'] + ' Software',
                               :addressName => 'Billing',
                               :street1 => self.address1,
@@ -418,7 +437,9 @@ class Order < ActiveRecord::Base
   def paypal_express_checkout_payment(token, payer_id)
     res = Paypal.express_checkout_payment(:token => token,
                                           :payerID => payer_id,
-                                          :amount => self.total)
+                                          :amount => self.total,
+                                          :item_amount => self.total_without_taxes,
+                                          :tax_amount => self.tax_total)
     success = (res.ack == 'Success' || res.ack == 'SuccessWithWarning')
     if success
       self.transaction_number = res.doExpressCheckoutPaymentResponseDetails.paymentInfo.transactionID

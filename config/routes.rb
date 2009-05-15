@@ -13,7 +13,8 @@ ActionController::Routing::Routes.draw do |map|
   # -- just remember to delete public/index.html.
   map.connect 'store', :controller => "store/order"
   map.connect '', :controller => "store/order"
-
+  map.resources :freebies, :controller => 'store/freebies', :path_prefix => 'store'
+  
   # Map the order controller as a resource so that it can take JSON orders from Cocoa frontend
   # NOTE: This must come after the admin mapping
   map.resource :order, :path_prefix => 'store', :controller => 'store/order'
@@ -28,6 +29,7 @@ ActionController::Routing::Routes.draw do |map|
   #   map.connect ':controller/service.wsdl', :action => 'wsdl'
 
   map.connect 'bugreport/crash', :controller => 'email', :action => 'crash_report'
+  map.connect 'bugreport/test_500', :controller => 'email', :action => 'cause_crash'
 
   # Install the default route as the lowest priority.
   map.connect ':controller/:action/:id'

@@ -1,0 +1,110 @@
+<script type="text/javascript">
+
+function validate() {
+	setup_help_values();
+	$('#submit').get(0).disabled = true;
+	return true;
+}
+
+function reset() {
+	$('#submit').get(0).disabled = false;
+	setup_help_values();
+}
+
+var HELP_VALUES = new Array();
+HELP_VALUES['#order_company'] = 'optional';
+HELP_VALUES['#order_comment'] = 'optional';
+
+onload = reset;
+onunload = reset;
+
+$(document).ready(function(){
+	$('#order_company').focus( function() { setup_help_value('#order_company'); });
+	$('#order_company').blur(  function() { setup_help_value('#order_company'); });
+	$('#order_comment').focus( function() { setup_help_value('#order_comment'); });
+	$('#order_comment').blur(  function() { setup_help_value('#order_comment'); });
+});
+
+</script>
+
+<h1>Confirm</h1>
+
+<% unless @order.errors.empty? %>
+<div id="errors">
+  <h2 style="margin-bottom:14px;color:red">Problems</h2>
+  <ul>
+  <% @order.errors.each_full do |message| %>
+    <li><%= message %></li>
+  <% end %>
+  </ul>
+</div>
+<% end %>
+
+<div class="d cl"></div>
+
+<% if @order.tax %>
+  <div style='background-color: lightyellow; border: 1px solid yellow'>
+    <strong>Please note that <%= @order.tax.state %> sales tax (<%= number_to_percentage(@order.tax.percent, :precision => 1) %>) has been added to your order.</strong>
+  </div>
+<% end %>
+
+<div class="narrow">
+	<% if @order.items_count == 1 %>
+	<h2>Your Item</h2>
+	<% else %>
+	<h2>Your Items</h2>
+	<% end %>
+
+	<table id="order">
+		<% for item in @order.line_items -%>
+		<%   if item.quantity > 0 -%>
+		<tr>
+			<td class="price"><%= item.quantity %> @ <%= number_to_currency item.unit_price %> each</td>
+			<td class="prod"><%= item.product.name %></td>
+		</tr>
+		<%   end -%>
+		<% end -%>
+		<% if @order.coupon -%>
+		<tr>
+			<td class="price">-<%= number_to_currency(@order.coupon_amount) %></td>
+			<td><%= @order.coupon.description %></td>
+		</tr>
+		<% end -%>
+		
+		<% if @order.tax %>
+		  <tr style='background-color: lightyellow'>
+        <td class="price"><%= number_to_currency(Tax.calculate_tax(@order.total_without_taxes, @order.tax.percent)) %></td>
+        <td class="prod"><span class="tax"><%= @order.tax.state %> Sales Tax (<%= number_to_percentage(@order.tax.percent, :precision =>  1) %>)</span></td>
+      </tr>
+		<% end %>
+		
+		<tr id="total">
+			<td></td>
+			<td>Total: <strong><%= number_to_currency @order.total %></strong></td>
+		</tr>
+	</table>
+</div>
+
+<% form_tag({:action => "create"}, {:onsubmit => "javascript:return validate();"}) do -%>
+  <div class="d"></div>
+
+  <div class="narrow">
+  	<h2>Your Information</h2>
+      <p><span>Name on License:</span> <%= text_field "order", "licensee_name" %></p>
+
+      <p><label><span>Email:</span><%= text_field "order", "email"  %></label></p>
+
+      <p id="company" style="margin-top:10px">
+          <label><span>Company:</span><%= text_field "order", "company" %></label>
+      </p>
+
+      <p>
+  		<label><span>Comment:</span><%= text_field "order", "comment" %></label>
+      </p>
+
+  	<p><span>&nbsp;</span><label><input type="checkbox" name="subscribe" value="checked"/>
+          Keep me updated with <%=$STORE_PREFS['company_name']%> news.</label></p>
+  </div>
+
+  <p><input id="submit" name="commit" type="submit" value="&nbsp; Place Order &rarr;" /></p>
+<% end -%>

@@ -55,7 +55,17 @@ class Store::OrderController < ApplicationController
       redirect_to :action => 'index' and return
     end
 
-    if @order.total <= 0
+    # check for freebie coupon
+    if @order.total == 0 && @order.line_items.size > 0 && @order.coupon != nil
+      @order.payment_type = 'freebie'
+      if @order.save
+        session[:order_id] = @order.id
+        redirect_to new_freeby_path and return
+      else
+        flash[:notice] = 'Problem saving order'
+        redirect_to :action => 'index' and return
+      end
+    elsif @order.total <= 0
       flash[:notice] = 'Nothing to buy!'
       redirect_to :action => 'index' and return
     end
@@ -65,7 +75,7 @@ class Store::OrderController < ApplicationController
       res =  Paypal.express_checkout(:amount => String(@order.total),
                                      :cancelURL => url_for(:action => 'index'),
                                      :returnURL => url_for(:action => 'confirm_paypal'),
-                                     :noShipping => 1,
+                                     :noShipping => 0,
                                      :cpp_header_image => $STORE_PREFS['paypal_express_checkout_header_image'])
       if res.ack == 'Success' || res.ack == 'SuccessWithWarning'
         # Need to copy the string. For some reason, it tries to render the payment action otherwise
@@ -97,7 +107,7 @@ class Store::OrderController < ApplicationController
   def redirect
     redirect_to :action => 'index'
   end
-
+  
   # Accept orders from Cocoa storefront. It only works with JSON right now
   def create
     if params[:order] == nil
@@ -224,6 +234,8 @@ class Store::OrderController < ApplicationController
       @order.country = 'XX'
     end
     @order.payment_type = 'PayPal'
+    
+    @order.state = payerInfo.address.stateOrProvince.kind_of?(SOAP::Mapping::Object) ? "" : payerInfo.address.stateOrProvince
 
     if not @order.save()
       flash[:error] = 'Problem saving order'
@@ -286,7 +298,7 @@ class Store::OrderController < ApplicationController
     if params[:subscribe] && params[:subscribe] == 'checked'
       @order.subscribe_to_list()
     end
-
+    
     @order.status = success ? 'C' : 'F'
     @order.finish_and_save()
 
