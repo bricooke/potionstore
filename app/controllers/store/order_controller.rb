@@ -227,7 +227,7 @@ class Store::OrderController < ApplicationController
     @order.email = String.new(payerInfo.payer)
     @order.first_name = String.new(payerInfo.payerName.firstName)
     @order.last_name = String.new(payerInfo.payerName.lastName)
-    @order.licensee_name = @order.first_name + " " + @order.last_name
+    @order.licensee_name = @order.first_name.strip + " " + @order.last_name.strip
     if payerInfo.respond_to? 'payerCountry'
       @order.country = String.new(payerInfo.payerCountry)
     else
