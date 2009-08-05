@@ -56,7 +56,7 @@ function choose_cc() {
 
 function update_licensee_name() {
 	if ($('#order_licensee_name').val() == '') {
-		var name = $('#order_first_name').val() + ' ' + $('#order_last_name').val();
+		var name = $('#order_first_name').val().replace(/^\s\s*/, '').replace(/\s\s*$/, '') + ' ' + $('#order_last_name').val().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 		$('#order_licensee_name').val(name);
 	}
 }
