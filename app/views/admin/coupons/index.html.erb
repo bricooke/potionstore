@@ -1,0 +1,32 @@
+<h1>Coupons</h1>
+
+<%= link_to "New Coupon", new_admin_coupon_path %>
+<br/>
+<br/>
+<table class="list">
+  <tr>
+    <th>Created</th>
+    <th>Coupon</th>
+    <th>Description</th>
+    <th>Amount</th>
+    <th>Expires</th>
+    <th>Used</th>
+    <th>Uses left</th>
+    <th></th>
+  </tr>
+  <% for coupon in @coupons %>
+    <tr class="<%= coupon.expired? ? 'expired' : '' %>">
+      <td><%= coupon.created_at.to_date.to_s rescue "" %></td>
+      <td><%= coupon.coupon %></td>
+      <td><%= coupon.description %></td>
+      <td><%= coupon.amount %></td>
+      <td><%= coupon.numdays != 0 ? coupon.created_at.to_date + coupon.numdays.days : "never" %></td>
+      <td><%= coupon.used_count %></td>
+      <td><%= coupon.use_limit - coupon.used_count %></td>
+      <td>
+        <%= link_to "edit", edit_admin_coupon_path(coupon) %>
+        <%= link_to "[x]", admin_coupon_path(coupon), :confirm => 'Are you sure?', :method => :delete %>
+      </td>
+    </tr>
+  <% end %>
+</table>

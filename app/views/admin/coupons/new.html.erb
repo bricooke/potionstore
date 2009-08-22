@@ -1,0 +1,12 @@
+<h1>Add Coupons</h1>
+
+<% form_for :coupon, :url => admin_coupons_path do |f| -%>
+  <table class="form">
+    <%= render :partial => 'form', :locals => {:f => f} %>
+  
+    <tr>
+  		<td></td>
+  		<td><%= submit_tag 'Generate Coupons' %> or <%= link_to 'cancel', admin_coupons_path %></td>
+  	</tr>
+  </table>
+<% end -%>

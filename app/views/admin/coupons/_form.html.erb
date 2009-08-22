@@ -1,0 +1,43 @@
+  <% if @coupon.new_record? %>
+  	<tr>
+  		<td># to Generate:</td>
+  		<td><%= f.text_field 'quantity', 'value' => '1' %></td>
+  	</tr>
+  <% end %>
+  
+	<tr>
+		<td>Promotion Code:</td>
+		<td><%= f.text_field 'code' %><small>optional</small></td>
+	</tr>
+
+	<tr>
+		<td>Coupon Code:</td>
+		<td><%= f.text_field 'coupon' %><small>leave blank to have re-generated</small></td>
+	</tr>
+
+	<tr>
+		<td>Description for Customer:</td>
+		<td><%= f.text_field 'description' %></td>
+	</tr>
+
+	<tr>
+		<td>Product:</td>
+		<td>
+		  <%= f.select :product_code, ["all"] + Product.find(:all).collect{|x| x.code}.uniq %>
+		</td>
+	</tr>
+
+	<tr>
+		<td>Discount Amount:</td>
+		<td><%= f.text_field 'amount' %></td>
+	</tr>
+
+	<tr>
+		<td>Use Limit:</td>
+		<td><%= f.text_field 'use_limit' %></td>
+	</tr>
+	
+	<tr>
+	  <td>Expires on:</td>
+    <td><%= f.text_field 'expiration_date' %><small>yyyy-mm-dd</small></td>
+  </tr>

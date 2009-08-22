@@ -7,7 +7,21 @@ class Coupon < ActiveRecord::Base
   end
 
   def expired?
-    (self.used_count >= self.use_limit) || (self.numdays != 0 && self.creation_time + self.numdays.days < Time.now)
+    (self.used_count >= self.use_limit) || (self.numdays != 0 && self.created_at + self.numdays.days < Time.now)
+  end
+  
+  def expiration_date=(v)
+    if v.blank?
+      self[:numdays] = nil 
+    else
+      self.created_at = Time.now unless !self.created_at.nil?
+      self[:numdays] = (Date.parse(v) - self.created_at.to_date).to_i
+    end      
+  end
+  
+  def expiration_date
+    return nil if self.numdays == 0
+    (self.created_at + self.numdays.days).to_date
   end
 
   private

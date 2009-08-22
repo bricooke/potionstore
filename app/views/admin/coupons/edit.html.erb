@@ -1,0 +1,12 @@
+<h1>Edit Coupon</h1>
+
+<% form_for :coupon, :url => admin_coupon_path(@coupon), :html => {:method => :put} do |f| -%>
+  <table class="form">
+    <%= render :partial => 'form', :locals => {:f => f} %>
+  
+    <tr>
+  		<td></td>
+  		<td><%= submit_tag 'Update Coupon' %> or <%= link_to 'cancel', admin_coupons_path %></td>
+  	</tr>
+	</table>
+<% end -%>

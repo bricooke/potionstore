@@ -9,7 +9,6 @@ first:
   percentage: 0
   used_count: 0
   use_limit:  1
-  creation_time: "2007-01-01 00:00:00+08:00"
   numdays: 365
 expired:
   id: 2
@@ -21,5 +20,4 @@ expired:
   percentage: 0
   used_count: 0
   use_limit:  1
-  creation_time: "2006-01-01 00:00:00+08:00"
   numdays: 365
